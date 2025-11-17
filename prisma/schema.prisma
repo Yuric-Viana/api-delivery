@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRoles {
+  customer
+  sale
+}
+
+enum DeliveryStatus {
+  processing
+  shipped
+  delivered
+}
+
+model User {
+  id String @id @default(uuid())
+  name String
+  email String 
+  password String 
+  
+  role UserRoles @default(customer)
+
+  delivery Delivery[]
+
+  createdAt DateTime @default(now()) @map("created_at") 
+  updatedAt DateTime? @updatedAt @map("updated_at") 
+
+  @@map("users")
+}
+
+model Delivery {
+  id String @id @default(uuid())
+  userId String @map("user_id")
+  description String
+
+  status DeliveryStatus @default(processing)
+
+  users User @relation(fields: [userId], references: [id])
+  logs DeliveryLogs[]
+
+  createdAt DateTime @default(now()) @map("created_at") 
+  updatedAt DateTime? @updatedAt @map("updated_at") 
+
+  @@map("deliveries")
+}
+
+model DeliveryLogs {
+  id String @id @default(uuid())
+  deliveryId String @map("delivery_id")
+  description String
+
+  createdAt DateTime @default(now()) @map("created_at") 
+  updatedAt DateTime? @updatedAt @map("updated_at") 
+
+  delivery Delivery @relation(fields: [deliveryId], references: [id])
+
+  @@map("delivery_logs")
+}
